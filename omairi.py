@@ -13,11 +13,21 @@ res = requests.get(url)
 
 soup = BeautifulSoup(res.content, 'html.parser')
 
-ranking = []
-name = []
-address = []
+temple_ranking = []
+temple_name = []
+temple_address = []
+
+shrine_ranking = []
+shrine_name = []
+shrine_address = []
+
+other_ranking = []
+other_name = []
+other_address = []
+
 type = []
-#goshuin_flg = []
+
+
 
 i = 1
 
@@ -46,34 +56,98 @@ while True :
         # 寺・神社フラグ
         target_flag = "その他"
         if target.find(class_="l_temple"):
-            target_flag = "お寺"
+            temple_ranking.append(target.find(class_='spot_rank_inner').span.text.strip())
+            temple_name.append(target.find(class_='spot_name_body').text.replace(' ', '').strip())
+            temple_address.append(target.find(class_='spot_address').text.strip())
         elif target.find(class_="l_shrine"):
-            target_flag = "神社"
-
-        # 御朱印フラグ
-#        goshin_flag = 0
-#        if target.find(class_='spot_goshuin'):
-#            goshin_flag = 1
-
-        ranking.append(target.find(class_='spot_rank_inner').span.text.strip())
-        name.append(target.find(class_='spot_name_body').text.replace(' ', '').strip())
-        address.append(target.find(class_='spot_address').text.strip())
-        type.append(target_flag)
-#        goshuin_flg.append(goshin_flag)
+            shrine_ranking.append(target.find(class_='spot_rank_inner').span.text.strip())
+            shrine_name.append(target.find(class_='spot_name_body').text.replace(' ', '').strip())
+            shrine_address.append(target.find(class_='spot_address').text.strip())
+        else :
+            other_ranking.append(target.find(class_='spot_rank_inner').span.text.strip())
+            other_name.append(target.find(class_='spot_name_body').text.replace(' ', '').strip())
+            other_address.append(target.find(class_='spot_address').text.strip())
 
     i = i + 1
 
+print("temple:" + str(len(temple_ranking)))
+print("shrine:" + str(len(shrine_ranking)))
+print("other:" + str(len(other_ranking)))
 
-dic = {
-    'ランキング': ranking,
-    '名称': name,
-    '住所': address,
-    '神社・寺フラグ': type
-#    '御朱印フラグ': goshuin_flg
-}
+# データ出力
 
-df = pd.DataFrame(dic)
+# お寺
+max = 1900
+max_count = int(len(temple_ranking) / max) + 1
 
-file_path = os.getcwd() + "\\" + "data_file.xslx"
-with pd.ExcelWriter("./sample.xlsx", engine="openpyxl") as writer:
-    df.to_excel(writer, sheet_name="sample_sheet", index=False)
+for count in range(max_count):
+
+    print("count:" + str(count))
+
+    start = count * max
+    end = (count + 1) * 1900
+
+    ranking = temple_ranking[start:end]
+    name = temple_name[start:end]
+    address = temple_address[start:end]
+
+    dic = {
+        'ランキング': ranking,
+        '名称': name,
+        '住所': address
+    }
+
+    df = pd.DataFrame(dic)
+
+    #ファイル名
+    with pd.ExcelWriter("./temple_" + str(count) + ".xlsx", engine="openpyxl") as writer:
+        df.to_excel(writer, sheet_name="sample_sheet", index=False)
+
+
+# 神社
+max_count = int(len(shrine_ranking) / max) + 1
+
+for count in range(max_count):
+
+    start = count * max
+    end = (count + 1) * 1900
+
+    ranking = shrine_ranking[start:end]
+    name = shrine_name[start:end]
+    address = shrine_address[start:end]
+
+    dic = {
+        'ランキング': ranking,
+        '名称': name,
+        '住所': address
+    }
+
+    df = pd.DataFrame(dic)
+
+    #ファイル名
+    with pd.ExcelWriter("./shrine_" + str(count) + ".xlsx", engine="openpyxl") as writer:
+        df.to_excel(writer, sheet_name="sample_sheet", index=False)
+
+# その他
+max_count = int(len(other_ranking) / max) + 1
+
+for count in range(max_count):
+
+    start = count * max
+    end = (count + 1) * 1900
+
+    ranking = other_ranking[start:end]
+    name = other_name[start:end]
+    address = other_address[start:end]
+
+    dic = {
+        'ランキング': ranking,
+        '名称': name,
+        '住所': address
+    }
+
+    df = pd.DataFrame(dic)
+
+    #ファイル名
+    with pd.ExcelWriter("./other_" + str(count) + ".xlsx", engine="openpyxl") as writer:
+        df.to_excel(writer, sheet_name="sample_sheet", index=False)
